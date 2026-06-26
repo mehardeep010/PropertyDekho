@@ -23,9 +23,10 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-      # Pehli baar boot pe ye files alphabetically run hoti hain (schema pehle, seed baad me).
+      # Pehli baar boot pe ye files alphabetically run hoti hain (schema pehle, data baad me).
+      # seed-data.sql = RICH Kaggle dataset (1756 properties) — `npm run dump` se banti hai.
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./db/seed-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql:ro
     healthcheck:
       # DB tabhi "healthy" jab mysqld sach me queries le raha ho.
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-MDSify}"]
