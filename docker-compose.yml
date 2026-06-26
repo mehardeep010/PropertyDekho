@@ -1,0 +1,63 @@
+# KYA KAR RAHA HAI: Poora stack ek command me uthata hai — app + MySQL dono.
+# KAISE: `docker compose up` chalao. MySQL pehle healthy hota hai (schema + seed auto-load),
+# phir app start hota hai (depends_on: condition service_healthy). Saari config .env se aati hai.
+#
+# Chalane ka tareeka:
+#   docker compose up --build         (pehli baar / code badalne pe)
+#   docker compose down               (band karo, data rehta hai)
+#   docker compose down -v            (data volume bhi mita do, fresh start)
+#
+# NOTE: Ye Docker wali DB seed.sql (chhota hand seed) se bharti hai taaki self-contained rahe.
+# Asli Kaggle data chahiye toh app container ke andar `npm run seed` chalao (CSV mount karke).
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: propertydekho-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-MDSify}
+      MYSQL_DATABASE: ${DB_NAME:-property_mgmt}
+    ports:
+      # Host pe 3307 -> taaki local MySQL (3306) se clash na ho. Sirf inspection ke liye.
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      # Pehli baar boot pe ye files alphabetically run hoti hain (schema pehle, seed baad me).
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      # DB tabhi "healthy" jab mysqld sach me queries le raha ho.
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-MDSify}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app:
+    build: .
+    container_name: propertydekho-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db            # compose network me MySQL service ka naam 'db' hai
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-MDSify}
+      DB_NAME: ${DB_NAME:-property_mgmt}
+      DB_POOL_LIMIT: ${DB_POOL_LIMIT:-10}
+      # Production me JWT default nahi chalega (config crash karwa dega) — yahan asli secret do.
+      JWT_SECRET: ${JWT_SECRET:-change_this_long_random_secret_in_prod}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # AI optional — key ho toh Gemini, warna heuristic fallback.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:

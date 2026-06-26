@@ -10,6 +10,7 @@ const { verifyToken, requireRole } = require('./api/middlewares/auth');
 const { authLimiter, apiLimiter } = require('./api/middlewares/rateLimiter');
 const httpLogger = require('./api/middlewares/httpLogger');
 const errorHandler = require('./api/middlewares/errorHandler');
+const pool = require('./db/pool');
 
 const app = express();
 
@@ -27,6 +28,18 @@ app.use(express.json({ limit: '10kb' }));
 
 // Static frontend (public/ folder root se serve hota hai).
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// KYA KAR RAHA HAI: Health check — Docker/deploy platform isse poochhta hai "app zinda hai?".
+// DB ko bhi ping karta hai (SELECT 1). DB down -> 503 taaki orchestrator ko sahi signal mile.
+// Rate limit se PEHLE rakha hai taaki frequent healthchecks limiter na trigger karein.
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', db: 'up', uptime: Math.round(process.uptime()) });
+  } catch (err) {
+    res.status(503).json({ status: 'degraded', db: 'down' });
+  }
+});
 
 // Saare /api routes pe general rate limit (abuse rokne ke liye).
 app.use('/api', apiLimiter);

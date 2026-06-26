@@ -1,0 +1,14 @@
+# Image me ye cheezein NAHI jaani chahiye (chhoti image + secrets safe).
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+Real_Estate_Data
+Real_Estate_Data.zip
+*.md
+scratchpad
+.vscode
+.idea
