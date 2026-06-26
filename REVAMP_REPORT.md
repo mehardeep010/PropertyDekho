@@ -20,7 +20,7 @@
 | **AI** | A `Math.random()` fake estimate | Pluggable **Gemini** estimator + comparables heuristic fallback |
 | **Deploy** | Runs only on localhost | **Dockerised** + **live public URL on Railway** |
 
-**Live:** `https://radiant-bravery-production-4989.up.railway.app/`
+**Live:** `https://propertydekho.up.railway.app/`
 **Login:** `agent1@propertydekho.in` / `Test@123`
 
 ---
