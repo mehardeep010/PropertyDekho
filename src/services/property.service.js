@@ -4,6 +4,7 @@
 // sakti" — ye rule yahan enforce hota hai, status code ke saath ApiError throw karke.
 
 const PropertyRepository = require('../repositories/property.repository');
+const AiEstimator = require('./aiEstimator.service');
 const ApiError = require('../utils/ApiError');
 
 const PropertyService = {
@@ -18,21 +19,26 @@ const PropertyService = {
     return { ...property, amenities };
   },
 
-  // KYA KAR RAHA HAI: AI estimated price nikaalta hai.
-  // KAISE: Abhi ke liye simple heuristic (±10%). PHASE 6 me ye method Gemini API se
-  // replace hoga — controller ko isse koi farak nahi padega (yahi seam ka fayda hai).
-  estimatePrice(price) {
-    return Number((price * (0.9 + Math.random() * 0.2)).toFixed(2));
-  },
-
   async create(data) {
-    const AI_Est_Price = this.estimatePrice(data.Price);
+    // AI_Est_Price ab pluggable estimator se aata hai (Gemini ya heuristic fallback).
+    const { value: AI_Est_Price } = await AiEstimator.estimate(data);
     const id = await PropertyRepository.create({
       ...data,
       Status: data.Status || 'Available',
       AI_Est_Price,
     });
     return { Property_ID: id, AI_Est_Price };
+  },
+
+  // KYA KAR RAHA HAI: Existing property ka AI estimate dobara nikaal ke DB me save karta hai.
+  // KAISE: Pehle property nikaalo (404 agar nahi mili), estimator chalao, AI_Est_Price update
+  // karo. Response me {source, rationale} bhi deta hai taaki UI bata sake estimate kahan se aaya.
+  async reestimate(id) {
+    const property = await PropertyRepository.findById(id);
+    if (!property) throw ApiError.notFound('Property not found');
+    const result = await AiEstimator.estimate(property);
+    await PropertyRepository.updateAiPrice(id, result.value);
+    return { Property_ID: Number(id), AI_Est_Price: result.value, source: result.source, rationale: result.rationale };
   },
 
   async update(id, data) {

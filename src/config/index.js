@@ -31,6 +31,14 @@ const config = {
     secret: process.env.JWT_SECRET || 'propvault_dev_secret_change_me',
     expiresIn: process.env.JWT_EXPIRES_IN || '8h',
   },
+
+  ai: {
+    // KYA KAR RAHA HAI: Gemini se property price estimate. Key OPTIONAL hai — na ho toh app
+    // chalta rehta hai aur heuristic (comparable-based) fallback use hota hai. Isliye yahan
+    // required() nahi lagaya. Key chahiye toh Google AI Studio se free milti hai.
+    geminiKey: process.env.GEMINI_API_KEY || '',
+    geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
+  },
 };
 
 // Dev safety warning: agar prod me default secret chal raha hai toh chillao.

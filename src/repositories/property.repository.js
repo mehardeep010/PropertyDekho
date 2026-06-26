@@ -60,6 +60,11 @@ const PropertyRepository = {
       [Title, Type, Location, Price, Status, Owner_ID, Agent_ID, id]);
   },
 
+  // Sirf AI_Est_Price update (re-estimate ke baad).
+  async updateAiPrice(id, aiPrice) {
+    await pool.query('UPDATE PROPERTY SET AI_Est_Price = ? WHERE Property_ID = ?', [aiPrice, id]);
+  },
+
   async remove(id) {
     await pool.query('DELETE FROM PROPERTY WHERE Property_ID = ?', [id]);
   },

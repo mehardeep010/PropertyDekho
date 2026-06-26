@@ -27,6 +27,11 @@ const PropertyController = {
   remove: asyncHandler(async (req, res) => {
     res.json(await PropertyService.remove(req.params.id));
   }),
+
+  // POST /:id/estimate — AI se price dobara estimate karke save karta hai.
+  estimate: asyncHandler(async (req, res) => {
+    res.json(await PropertyService.reestimate(req.params.id));
+  }),
 };
 
 module.exports = PropertyController;
