@@ -3,22 +3,33 @@
 // Isse testing aasaan ho jaati hai — test me bina port khole app ko supertest se hit kar sakte hain.
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 
 const { verifyToken, requireRole } = require('./api/middlewares/auth');
+const { authLimiter, apiLimiter } = require('./api/middlewares/rateLimiter');
 const errorHandler = require('./api/middlewares/errorHandler');
 
 const app = express();
 
-// Core middlewares: CORS + JSON body parsing.
+// KYA KAR RAHA HAI: Security headers lagata hai (XSS, clickjacking etc. se bachav).
+// contentSecurityPolicy off rakha hai kyunki static demo frontend inline scripts/styles use
+// karta hai — baaki saare protective headers chalu rehte hain.
+app.use(helmet({ contentSecurityPolicy: false }));
+
+// Core middlewares: CORS + JSON body parsing (10kb limit taaki bada payload DoS na ho).
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 
 // Static frontend (public/ folder root se serve hota hai).
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// Saare /api routes pe general rate limit (abuse rokne ke liye).
+app.use('/api', apiLimiter);
+
 // ── PUBLIC API ROUTES (token ki zaroorat nahi) ──
-app.use('/api/auth', require('./api/routes/auth.routes'));
+// Auth pe extra sakht limiter (brute-force/password-guessing rokne ke liye).
+app.use('/api/auth', authLimiter, require('./api/routes/auth.routes'));
 app.use('/api/properties', require('./api/routes/property.routes'));
 app.use('/api/amenities', require('./api/routes/amenity.routes'));
 

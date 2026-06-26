@@ -1,0 +1,8 @@
+# Saari text files me LF line endings enforce karo (Windows pe CRLF warnings band ho jaayenge).
+* text=auto eol=lf
+
+# Binary files ko mat chhedo.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary
