@@ -6,23 +6,23 @@
 const config = require('./src/config');
 const app = require('./src/app');
 const db = require('./src/db/pool');
+const logger = require('./src/utils/logger');
 const { startAutoExpiry } = require('./src/jobs/autoExpiry');
 
 async function start() {
   // Pehle DB connection verify karo — agar DB down hai toh saaf-saaf bata do.
   try {
     await db.assertConnection();
-    console.log('[DB] Connected successfully via pool.');
+    logger.info('[DB] Connected successfully via pool.');
   } catch (err) {
-    console.error('[DB] Connection failed:', err.message);
+    logger.error({ err }, '[DB] Connection failed');
   }
 
   // Background cleanup worker chalu karo (expired leases/sales).
   startAutoExpiry();
 
   app.listen(config.port, () => {
-    console.log(`\nPROPERTY DEKHO - SYSTEM RUNNING ON PORT ${config.port}\n`);
-    console.log(`Website Live at: http://localhost:${config.port}\n`);
+    logger.info(`PROPERTY DEKHO running on http://localhost:${config.port}`);
   });
 }
 

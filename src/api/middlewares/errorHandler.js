@@ -22,9 +22,10 @@ function errorHandler(err, req, res, next) {
     return res.status(409).json({ error: err.sqlMessage || err.message });
   }
 
-  // Baaki sab = unexpected bug. Server pe poora log karo, client ko generic message.
-  // (Phase 3 me ye console.error proper logger se replace hoga.)
-  console.error('[Unhandled Error]', err);
+  // Baaki sab = unexpected bug. Server pe poora log karo (request-id ke saath, taaki trace ho
+  // sake), client ko sirf generic message (stack trace leak nahi karte).
+  const log = req.log || require('../../utils/logger');
+  log.error({ err }, 'Unhandled error');
   return res.status(500).json({ error: 'Internal server error' });
 }
 

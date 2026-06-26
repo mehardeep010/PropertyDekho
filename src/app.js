@@ -8,9 +8,13 @@ const path = require('path');
 
 const { verifyToken, requireRole } = require('./api/middlewares/auth');
 const { authLimiter, apiLimiter } = require('./api/middlewares/rateLimiter');
+const httpLogger = require('./api/middlewares/httpLogger');
 const errorHandler = require('./api/middlewares/errorHandler');
 
 const app = express();
+
+// KYA KAR RAHA HAI: Sabse pehle request logging — har request ko id ke saath trace karta hai.
+app.use(httpLogger);
 
 // KYA KAR RAHA HAI: Security headers lagata hai (XSS, clickjacking etc. se bachav).
 // contentSecurityPolicy off rakha hai kyunki static demo frontend inline scripts/styles use

@@ -4,6 +4,7 @@
 //   - Agar sale bane 3 ghante ho gaye aur payment nahi aaya -> Cancelled + property Available.
 // Pehle ye logic server.js me tha; ab apni job file me alag hai (Single Responsibility).
 const pool = require('../db/pool');
+const logger = require('../utils/logger');
 
 async function runAutoExpiry() {
   try {
@@ -17,7 +18,7 @@ async function runAutoExpiry() {
       await pool.query("UPDATE LEASE SET Lease_Status='Expired' WHERE Lease_ID=?", [lease.Lease_ID]);
       await pool.query('DELETE FROM TENANT_LEASE WHERE Lease_ID=?', [lease.Lease_ID]);
       await pool.query("UPDATE PROPERTY SET Status='Available' WHERE Property_ID=?", [lease.Property_ID]);
-      console.log(`[Auto-Expiry] Cleaned up Lease #${lease.Lease_ID}`);
+      logger.info(`[Auto-Expiry] Cleaned up Lease #${lease.Lease_ID}`);
     }
 
     // Expired sales dhoondo aur cancel karo (Sold ko mat chhedo).
@@ -31,7 +32,7 @@ async function runAutoExpiry() {
       await pool.query("UPDATE PROPERTY SET Status='Available' WHERE Property_ID=? AND Status != 'Sold'", [sale.Property_ID]);
     }
   } catch (e) {
-    console.error('[Auto-Expiry Error]:', e.message);
+    logger.error({ err: e }, '[Auto-Expiry Error]');
   }
 }
 
