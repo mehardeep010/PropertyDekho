@@ -1,2 +1,7 @@
 node_modules/
 .env
+
+# Raw Kaggle dataset (11MB) — repo me commit nahi karte. Kaggle se download karke
+# Real_Estate_Data/ me rakho, phir `npm run seed` chalao (scripts/etl.js padhta hai).
+Real_Estate_Data/
+Real_Estate_Data.zip
