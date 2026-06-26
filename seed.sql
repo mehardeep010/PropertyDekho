@@ -87,10 +87,13 @@ INSERT INTO INQUIRY (Message, Date, Status, Tenant_ID, Property_ID, Agent_ID) VA
 ('Interested in Lakeshore Cottage for vacation stay.', '2026-03-05', 'Responded', 1, 8, 1);
 
 -- LEASES
+-- NOTE: Lease #3 ko abhi 'Active' daal rahe hain taaki uske historical payments insert ho
+-- sakein (payment trigger sirf active/pending lease pe payment allow karta hai). Payments ke
+-- baad neeche use 'Terminated' kar denge — yahi real-world order hai (pehle pay hua, baad me khatam).
 INSERT INTO LEASE (Start_Date, End_Date, Monthly_Rent, Security_Deposit, Property_ID, Lease_Status) VALUES
 ('2026-01-01', '2026-12-31', 32000,  64000,  3, 'Active'),
 ('2026-02-01', '2027-01-31', 85000,  170000, 1, 'Active'),
-('2025-06-01', '2026-05-31', 45000,  90000,  5, 'Terminated'),
+('2025-06-01', '2026-05-31', 45000,  90000,  5, 'Active'),
 ('2026-03-01', '2027-02-28', 60000,  120000, 7, 'Pending_Payment');
 
 -- TENANT_LEASE
@@ -107,3 +110,18 @@ INSERT INTO PAYMENT (Payment_Date, Amount, Payment_Type, Method, Status, Lease_I
 ('2025-07-01', 45000, 'Monthly_Rent',     'Cheque',        'Success', 3),
 ('2025-08-01', 45000, 'Late_Fee',         'Cheque',        'Failed',  3),
 ('2025-09-01', 45000, 'Monthly_Rent',     'Cheque',        'Success', 3);
+
+-- Ab Lease #3 ko Terminated karo (payments record ho chuke hain). trg_lease_after_update
+-- property ko wapas Available kar dega kyunki us property pe koi aur active lease nahi hai.
+UPDATE LEASE SET Lease_Status='Terminated' WHERE Lease_ID=3;
+
+-- USERS (login accounts) — sabhi ka password 'Test@123' hai (bcrypt hashed).
+-- Ref_ID role table ke id se map hota hai (agent->Agent_ID, owner->Owner_ID, tenant->Tenant_ID).
+INSERT INTO USERS (Username, Email, Password, Role, Ref_ID) VALUES
+('ravi_agent',    'ravi.agent@mail.com',    '$2b$10$N/QjlMRGzglmtc5Nu/YqgOmGwzJMRzzr8xp9EzlEPigr7tbpf4mQO', 'agent',  1),
+('priya_agent',   'priya.agent@mail.com',   '$2b$10$N/QjlMRGzglmtc5Nu/YqgOmGwzJMRzzr8xp9EzlEPigr7tbpf4mQO', 'agent',  2),
+('anil_owner',    'anil.owner@mail.com',    '$2b$10$N/QjlMRGzglmtc5Nu/YqgOmGwzJMRzzr8xp9EzlEPigr7tbpf4mQO', 'owner',  1),
+('meera_owner',   'meera.owner@mail.com',   '$2b$10$N/QjlMRGzglmtc5Nu/YqgOmGwzJMRzzr8xp9EzlEPigr7tbpf4mQO', 'owner',  2),
+('amrita_tenant', 'amrita.tenant@mail.com', '$2b$10$N/QjlMRGzglmtc5Nu/YqgOmGwzJMRzzr8xp9EzlEPigr7tbpf4mQO', 'tenant', 1),
+('kiran_tenant',  'kiran.tenant@mail.com',  '$2b$10$N/QjlMRGzglmtc5Nu/YqgOmGwzJMRzzr8xp9EzlEPigr7tbpf4mQO', 'tenant', 2),
+('admin',         'admin@propertydekho.in', '$2b$10$N/QjlMRGzglmtc5Nu/YqgOmGwzJMRzzr8xp9EzlEPigr7tbpf4mQO', 'admin',  1);
