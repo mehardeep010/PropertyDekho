@@ -19,6 +19,8 @@ const config = {
 
   db: {
     host: process.env.DB_HOST || 'localhost',
+    // DB_PORT zaroori hai cloud (Railway etc.) ke liye jahan MySQL default 3306 pe nahi hota.
+    port: parseInt(process.env.DB_PORT, 10) || 3306,
     user: process.env.DB_USER || 'root',
     password: required('DB_PASSWORD', process.env.NODE_ENV === 'test' ? 'test' : undefined),
     database: process.env.DB_NAME || 'property_mgmt',

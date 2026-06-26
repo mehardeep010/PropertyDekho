@@ -29,7 +29,7 @@ async function attemptLease(pool, propertyId, agentLabel) {
 
 async function main() {
   const pool = mysql.createPool({
-    host: config.db.host, user: config.db.user, password: config.db.password,
+    host: config.db.host, port: config.db.port, user: config.db.user, password: config.db.password,
     database: config.db.database, waitForConnections: true,
     connectionLimit: CONCURRENCY + 5, queueLimit: 0,
   });
