@@ -3,7 +3,9 @@
 
 ---
 
-## Part A — The tables (13 of them)
+## Part A — The tables (14 of them)
+*(AGENT, OWNER, TENANT, AMENITY, PROPERTY, PROPERTY_AMENITY, INQUIRY, LEASE, TENANT_LEASE,
+PAYMENT, SALE, CUSTOMER_ANALYSIS, USERS, INQUIRY_AUDIT — this matches the "14 tables" on your résumé.)*
 
 Think of them in groups:
 
